@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每公斤单价计算器</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; font-size: 16px; }
+  label { display: block; margin-top: 12px; font-weight: bold; }
+  input { padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
+  button { margin-top: 20px; padding: 12px; width: 100%; font-size: 18px; background: #007BFF; color: white; border: none; border-radius: 5px; }
+  button:active { background: #0056b3; }
+  #result { margin-top: 20px; font-size: 18px; font-weight: bold; color: #007BFF; line-height: 1.6; word-break: break-word; }
+</style>
+</head>
+<body>
+<h2>每公斤单价计算器</h2>
+
+<label>头程单价 (CNY/kg): <input id="head" type="number" step="0.01"></label>
+<label>尾程总价 (USD): <input id="tail" type="number" step="0.01"></label>
+<label>汇率 (CNY/USD): <input id="rate" type="number" step="0.0001" value="7.20"></label>
+<label>毛重 (kg): <input id="weight" type="number" step="0.01"></label>
+<label>体积 (m³): <input id="volume" type="number" step="0.0001"></label>
+<label>利润单价 (CNY/kg): <input id="profit" type="number" step="0.01"></label>
+
+<button onclick="calc()">计算</button>
+
+<p id="result"></p>
+
+<script>
+function calc(){
+  let head = parseFloat(document.getElementById('head').value) || 0;
+  let tail = parseFloat(document.getElementById('tail').value) || 0;
+  let rate = parseFloat(document.getElementById('rate').value) || 0;
+  let weight = parseFloat(document.getElementById('weight').value) || 0;
+  let volume = parseFloat(document.getElementById('volume').value) || 0;
+  let profit = parseFloat(document.getElementById('profit').value) || 0;
+
+  if(weight <= 0 && volume <= 0){
+    document.getElementById('result').innerHTML = "<span style='color:red'>毛重和体积至少有一个大于 0</span>";
+    return;
+  }
+
+  // 体积重
+  let volumeWeight = volume * 167;
+  // 计费重
+  let chargeableWeight = Math.max(weight, volumeWeight);
+  // 重抛比 (kg/m³)
+  let densityRatio = volume > 0 ? (weight / volume) : 0;
+
+  // 费用
+  let headCost = head * chargeableWeight;       // CNY
+  let tailCost = tail * rate;                   // USD→CNY
+  let profitTotal = profit * chargeableWeight;  // CNY
+
+  let total = headCost + tailCost + profitTotal;
+  let pricePerKg = total / chargeableWeight;
+
+  document.getElementById('result').innerHTML = 
+    "计费重: " + chargeableWeight.toFixed(2) + " kg<br>" +
+    "重抛比: " + densityRatio.toFixed(2) + " kg/m³<br>" +
+    "每公斤单价: " + pricePerKg.toFixed(2) + " 元";
+}
+</script>
+</body>
+</html>
